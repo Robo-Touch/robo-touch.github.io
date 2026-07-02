@@ -1,0 +1,14 @@
+/* ------------------------------------------------------------------
+   Global content scale.
+   Reproduces the look of viewing the site at ~80% browser zoom:
+   everything (text, images, spacing, container widths) is scaled down
+   uniformly, giving the content more room and a more compact feel.
+
+   To adjust: change the value below.
+     1    = normal (100%)
+     0.8  = looks like 80% browser zoom  (current)
+     0.9  = a subtler reduction
+   ------------------------------------------------------------------ */
+:root {
+  zoom: 0.8;
+}
