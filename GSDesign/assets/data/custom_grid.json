@@ -1,0 +1,310 @@
+{
+ "order": "cibsapkl",
+ "stops": {
+  "c": {
+   "label": "coating",
+   "stops": [
+    {
+     "label": "flat",
+     "shape": "flat",
+     "height": 0
+    },
+    {
+     "label": "cylinder \u00b7 convex",
+     "shape": "cyl",
+     "height": 2
+    },
+    {
+     "label": "cylinder \u00b7 concave",
+     "shape": "cyl",
+     "height": -2
+    },
+    {
+     "label": "dome \u00b7 convex",
+     "shape": "sph",
+     "height": 2
+    },
+    {
+     "label": "dome \u00b7 concave",
+     "shape": "sph",
+     "height": -2
+    }
+   ]
+  },
+  "i": {
+   "label": "interface",
+   "stops": [
+    {
+     "label": "flat",
+     "shape": "flat",
+     "height": 0
+    },
+    {
+     "label": "dome \u00b7 convex",
+     "shape": "sph",
+     "height": 1
+    },
+    {
+     "label": "dome \u00b7 concave",
+     "shape": "sph",
+     "height": -1
+    }
+   ]
+  },
+  "b": {
+   "label": "acrylic bottom",
+   "stops": [
+    {
+     "label": "flat",
+     "shape": "flat",
+     "height": 0
+    },
+    {
+     "label": "lens \u00b7 convex",
+     "shape": "sph",
+     "height": 1.5
+    },
+    {
+     "label": "lens \u00b7 concave",
+     "shape": "sph",
+     "height": -1.5
+    }
+   ]
+  },
+  "s": {
+   "label": "silicone",
+   "stops": [
+    {
+     "label": "1 mm",
+     "value": 1.0
+    },
+    {
+     "label": "2 mm",
+     "value": 2.0
+    }
+   ]
+  },
+  "a": {
+   "label": "acrylic",
+   "stops": [
+    {
+     "label": "3 mm",
+     "value": 3.0
+    },
+    {
+     "label": "5 mm",
+     "value": 5.0
+    }
+   ]
+  },
+  "p": {
+   "label": "specularity",
+   "stops": [
+    {
+     "label": "0.1",
+     "value": 0.1
+    },
+    {
+     "label": "0.5",
+     "value": 0.5
+    },
+    {
+     "label": "0.8",
+     "value": 0.8
+    }
+   ]
+  },
+  "k": {
+   "label": "camera",
+   "stops": [
+    {
+     "label": "standard<small>70\u00b0</small>",
+     "fov": 70
+    },
+    {
+     "label": "close wide<small>90\u00b0</small>",
+     "fov": 90
+    },
+    {
+     "label": "far narrow<small>55\u00b0</small>",
+     "fov": 55
+    }
+   ]
+  },
+  "l": {
+   "label": "lights",
+   "stops": [
+    {
+     "label": "edge-lit acrylic",
+     "lights": [
+      [
+       "R",
+       "left",
+       "acr",
+       0,
+       10
+      ],
+      [
+       "G",
+       "bottom",
+       "acr",
+       0,
+       10
+      ],
+      [
+       "B",
+       "right",
+       "acr",
+       0,
+       10
+      ]
+     ]
+    },
+    {
+     "label": "edge-lit silicone",
+     "lights": [
+      [
+       "R",
+       "left",
+       "sil",
+       0,
+       10
+      ],
+      [
+       "G",
+       "bottom",
+       "sil",
+       0,
+       10
+      ],
+      [
+       "B",
+       "right",
+       "sil",
+       0,
+       10
+      ]
+     ]
+    },
+    {
+     "label": "angled 30\u00b0",
+     "lights": [
+      [
+       "R",
+       "left",
+       1.0,
+       30,
+       10
+      ],
+      [
+       "G",
+       "bottom",
+       1.0,
+       30,
+       10
+      ],
+      [
+       "B",
+       "right",
+       1.0,
+       30,
+       10
+      ]
+     ]
+    },
+    {
+     "label": "steep 60\u00b0 from below",
+     "lights": [
+      [
+       "R",
+       "left",
+       0.5,
+       60,
+       10
+      ],
+      [
+       "G",
+       "bottom",
+       0.5,
+       60,
+       10
+      ],
+      [
+       "B",
+       "right",
+       0.5,
+       60,
+       10
+      ]
+     ]
+    },
+    {
+     "label": "long bars",
+     "lights": [
+      [
+       "R",
+       "left",
+       "acr",
+       0,
+       18
+      ],
+      [
+       "G",
+       "bottom",
+       "acr",
+       0,
+       18
+      ],
+      [
+       "B",
+       "right",
+       "acr",
+       0,
+       18
+      ]
+     ]
+    },
+    {
+     "label": "rotated sides",
+     "lights": [
+      [
+       "R",
+       "bottom",
+       "acr",
+       0,
+       10
+      ],
+      [
+       "G",
+       "right",
+       "acr",
+       0,
+       10
+      ],
+      [
+       "B",
+       "top",
+       "acr",
+       0,
+       10
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "contacts": [
+  "grid",
+  "none"
+ ],
+ "resolution": [
+  240,
+  180
+ ],
+ "count": 19440,
+ "fit": {
+  "half_width": 10.4,
+  "n_acr": 1.49,
+  "n_sil": 1.41
+ }
+}

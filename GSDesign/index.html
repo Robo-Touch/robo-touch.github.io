@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OptiSense Studio</title>
+<meta name="description" content="Interactive companion to “A Modularized Design Approach for GelSight Family of Vision-based Tactile Sensors” — change geometry, coating and lights and see the simulated tactile images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2211%22 cy=%2212%22 r=%229%22 fill=%22%23ff5a5f%22 opacity=%22.85%22/%3E%3Ccircle cx=%2221%22 cy=%2212%22 r=%229%22 fill=%22%233ddc84%22 opacity=%22.85%22/%3E%3Ccircle cx=%2216%22 cy=%2221%22 r=%229%22 fill=%22%234d7cff%22 opacity=%22.85%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/style.css?v=20261020j">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<div class="glow" aria-hidden="true"><span class="g-r"></span><span class="g-g"></span><span class="g-b"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="#top"><span class="brand-dot"></span>OptiSense Studio</a>
+  <nav>
+    <a href="#method">Method</a>
+    <a href="#lab">Design Lab</a>
+    <a href="#lab" data-goto="custom">Build your own</a>
+    <a href="#beyond">Beyond geometry</a>
+    <a class="nav-paper" href="https://arxiv.org/abs/2504.14739" target="_blank" rel="noopener">Paper ↗</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ───────────── HERO ───────────── -->
+<section class="hero">
+  <div class="hero-text reveal">
+    <p class="eyebrow">IJRR · arXiv 2504.14739</p>
+    <h1 class="paper-title">A Modularized Design Approach for GelSight Family of Vision-based Tactile Sensors</h1>
+    <p class="tagline">Design a tactile sensor <em>in simulation</em>, then build it.</p>
+    <p class="lede">GelSight sensors see touch through an optical system: a coated elastomer, coloured lights and a camera.
+      OptiSense Studio breaks that optical system into modules, gives them parameters, and scores each design with physically based rendering.
+      This page lets you change the geometry, the coating and the lights yourself and see the rendered tactile image.</p>
+    <p class="authors">Arpit Agarwal<sup>1*</sup> · Mohammad Amin Mirzaee<sup>2*</sup> · Xiping Sun<sup>2</sup> · Wenzhen Yuan<sup>2</sup>
+      <span><sup>1</sup>Carnegie Mellon University &nbsp; <sup>2</sup>University of Illinois Urbana-Champaign &nbsp; <sup>*</sup>equal contribution</span></p>
+    <div class="cta">
+      <a class="btn primary" href="#lab">Open the Design Lab</a>
+      <a class="btn" href="https://arxiv.org/abs/2504.14739" target="_blank" rel="noopener">Read the paper ↗</a>
+    </div>
+  </div>
+  <figure class="hero-sensor reveal" id="heroSensor">
+    <div class="press-frame">
+      <img src="assets/img/mini/cyl/3_surface_render.webp" alt="Simulated GelSight Mini tactile image" class="layer base">
+      <img src="assets/img/mini/cyl/3_indented_render.webp" alt="" class="layer press">
+      <span class="ripple"></span>
+      <span class="hud"><i class="rec"></i> SIM · GelSight Mini · 648×486</span>
+    </div>
+    <figcaption>A simulated GelSight Mini with a cylindrical gel pad (coating specularity 0.3). Nine spherical indenters press in every few seconds.</figcaption>
+  </figure>
+</section>
+
+<!-- ───────────── METHOD ───────────── -->
+<section id="method" class="section">
+  <div class="section-head reveal">
+    <p class="eyebrow">The framework</p>
+    <h2>Five modules, four objectives, one loop</h2>
+    <p>Every GelSight-like sensor is decomposed into the same optical modules. Each module has a few parameters: a 27-point cage for shape, a BSDF for material, and position and type for lights and camera.
+      A design is rendered with indenters pressed into it, then scored. You can tune it by hand (forward design) or let a search choose (inverse design: grid search or CMA-ES).</p>
+  </div>
+
+  <ol class="modules reveal-stagger">
+    <li style="--c:var(--m1)"><b>Soft elastomer</b><span>PDMS gel that deforms on contact · RoughDielectric</span></li>
+    <li style="--c:var(--m2)"><b>Support structure</b><span>Clear epoxy / acrylic that pipes the light · RoughDielectric</span></li>
+    <li style="--c:var(--m3)"><b>Opaque coating</b><span>Paint on the sensing surface · RoughConductor, specularity ∈ [0,1]</span></li>
+    <li style="--c:var(--m4)"><b>Lights</b><span>Calibrated LEDs (IES / area models), grouped by colour</span></li>
+    <li style="--c:var(--m5)"><b>Camera</b><span>Perspective model with height, width and FoV, plus a saturation model</span></li>
+  </ol>
+
+  <div class="objectives reveal-stagger">
+    <article data-metric="rgb2norm"><h4>RGB2Normal <i class="info">i</i></h4><p>Press spheres, take lines through each contact, and fit the dominant colour (PCA) against the surface-normal angle. A higher R² means colour maps to shape more linearly.</p></article>
+    <article data-metric="normdiff"><h4>NormDiff <i class="info">i</i></h4><p>Add camera noise of 30 % of the RGB value and measure how much the normal estimate gets confused. Closer to 0 means more robust.</p></article>
+    <article data-metric="aoap"><h4>AOAP <i class="info">i</i></h4><p><i>As-orthographic-as-possible.</i> Trace camera rays through mirrors and refractions. They should hit the gel head-on, which means low distortion.</p></article>
+    <article data-metric="pw"><h4>2D-to-3D warping <i class="info">i</i></h4><p>Each pixel's footprint on the sensing surface should stay square and of equal size. The score is the mean area over its standard deviation.</p></article>
+  </div>
+</section>
+
+<!-- ───────────── LAB ───────────── -->
+<section id="lab" class="section">
+  <div class="section-head reveal">
+    <p class="eyebrow">Design Lab</p>
+    <h2>Four sensors, four design problems, and one of your own</h2>
+    <p>Each case study changes one part of the optical design (shape, coating or lights) and scores the result with the objectives the paper uses for that sensor. Hover a metric name for its definition.</p>
+  </div>
+
+  <div class="tabs reveal" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="mini"><small>Case I</small>GelSight Mini<em>RGB2Norm · NormDiff</em></button>
+    <button role="tab" aria-selected="false" data-tab="belt"><small>Case II</small>GelBelt<em>RGB2Norm · NormDiff</em></button>
+    <button role="tab" aria-selected="false" data-tab="g360"><small>Case III</small>GelSight360<em>RGB2Norm · NormDiff · 2D-to-3D</em></button>
+    <button role="tab" aria-selected="false" data-tab="svelte"><small>Case IV</small>GelSight Svelte<em>AOAP</em></button>
+    <button role="tab" aria-selected="false" data-tab="custom" class="tab-custom"><small>Sandbox</small>Build your own<em>design sandbox</em></button>
+  </div>
+
+  <!-- MINI -->
+  <div class="panel" data-panel="mini">
+    <header class="panel-head">
+      <h3>Case I · Curved GelSight Mini: coating optimization</h3>
+      <div class="metric-chips"><span data-metric="rgb2norm">RGB2Norm</span><span data-metric="normdiff">NormDiff</span><span class="ref">Fig. 9</span></div>
+    </header>
+    <p class="panel-lede">Bend the flat GelSight Mini gel into a cylinder or a dome by moving cage points, then find the coating that still reads shape well.</p>
+    <div class="lab">
+      <div class="stage">
+        <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame xfade" id="miniImg" style="aspect-ratio:648/486"></div>
+        <div class="stage-bar">
+          <div class="seg" id="miniView"><button data-v="render" class="on">Tactile image</button><button data-v="normal">Surface normals</button></div>
+          <label class="switch"><input type="checkbox" id="miniPress" checked><span></span>Press 9 spheres</label>
+        </div>
+      </div>
+      <aside class="controls">
+        <div class="group"><h5>Gel pad shape <span class="hint">cage edit</span></h5>
+          <div class="seg wide" id="miniShape">
+            <button data-s="flat">Flat<small>original</small></button>
+            <button data-s="cyl" class="on">Cylindrical<small>+6 mm middle row</small></button>
+            <button data-s="sph">Spherical<small>+9 mm centre</small></button>
+          </div>
+        </div>
+        <div class="group"><h5>Coating specularity <span class="hint">RoughConductor</span></h5>
+          <label class="ctl"><input type="range" id="miniSpec" min="0" max="10" step="1" value="1"><output id="miniSpecOut">0.1</output></label>
+          <div class="swatch xfade" id="miniSwatch"></div>
+          <p class="fine">Material preview of the coating at this specularity.</p>
+        </div>
+        <div class="charts" id="miniCharts"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- BELT -->
+  <div class="panel" data-panel="belt" hidden>
+    <header class="panel-head">
+      <h3>Case II · GelBelt: light placement and coating</h3>
+      <div class="metric-chips"><span data-metric="rgb2norm">RGB2Norm</span><span data-metric="normdiff">NormDiff</span><span class="ref">Fig. 10–11</span></div>
+    </header>
+    <p class="panel-lede">A new sensor: a flat sensing window between two rollers. The belt traps a thin layer of air over the acrylic, so light sent into the acrylic is lost to total internal reflection. Move the lights until the gel is evenly lit, then pick the coating.</p>
+    <div class="steps" id="beltSteps"><button class="on" data-step="1">① Light designs</button><button data-step="custom">② Move the lights yourself</button><button data-step="2">③ Coating</button></div>
+    <div class="lab">
+      <div class="stage">
+        <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame xfade tall" id="beltImg" style="aspect-ratio:400/510"></div>
+      </div>
+      <aside class="controls">
+        <div class="group" data-step-show="1"><h5>Light configuration</h5>
+          <div class="seg wide" id="beltDesign">
+            <button data-d="design1">Design 1<small>side, into acrylic</small></button>
+            <button data-d="design2">Design 2<small>top</small></button>
+            <button data-d="design3" class="on">Design 3<small>best</small></button>
+          </div>
+        </div>
+        <div class="group" data-step-show="custom" hidden><h5>LED bar <span class="hint">starts from Design 3</span></h5>
+          <div class="seg wide" id="beltBar"><button data-b="R" class="on"><i class="dot R"></i>Red</button><button data-b="G"><i class="dot G"></i>Green</button><button data-b="B"><i class="dot B"></i>Blue</button></div>
+          <label class="ctl"><span>height</span><input type="range" id="beltH" min="1" max="10" step="0.5"><output id="beltHOut"></output></label>
+          <p class="fine scale-note"><span>← in silicone</span><span>interface at 2.8 mm</span><span>in acrylic →</span></p>
+          <label class="ctl"><span>tilt</span><input type="range" id="beltT" min="0" max="67.5" step="2.5"><output id="beltTOut"></output></label>
+          <label class="ctl"><span>power</span><input type="range" id="beltP" min="0" max="2" step="0.1"><output id="beltPOut"></output></label>
+          <button class="btn ghost small" id="beltReset">Reset to Design 3</button>
+          <p class="fine" id="beltOffline" hidden>One bar moves at a time; the others stay at Design 3.</p>
+        </div>
+        <div class="group"><h5>Contact <span class="hint" data-step-hide="custom">click a dot to press there</span></h5>
+          <div class="press-grid" id="beltGrid" data-step-hide="custom"></div>
+          <div class="seg" id="beltObj" data-step-show="1"><button data-o="screw">Screw</button><button data-o="breadboard">Breadboard</button><button data-o="rack">Gear rack</button><button data-o="none">No contact</button></div>
+          <div class="seg" id="beltObjC" data-step-show="custom" hidden><button data-o="sph5" class="on">Sphere</button><button data-o="screw">Screw</button><button data-o="none">No contact</button></div>
+        </div>
+        <div class="group" data-step-show="2" hidden><h5>Coating specularity</h5>
+          <label class="ctl"><input type="range" id="beltSpec" min="0" max="10" step="1" value="2"><output id="beltSpecOut">0.2</output></label>
+        </div>
+        <div class="viewer small" id="beltViewer" data-step-hide="2"><span class="viewer-hint">light placement · drag</span></div>
+        <div class="charts" id="beltCharts" data-step-show="2" hidden></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- G360 -->
+  <div class="panel" data-panel="g360" hidden>
+    <header class="panel-head">
+      <h3>Case III · GelSight360: light colours and component shape</h3>
+      <div class="metric-chips"><span data-metric="rgb2norm">RGB2Norm</span><span data-metric="normdiff">NormDiff</span><span data-metric="pw">2D-to-3D warping</span><span class="ref">Fig. 12 · Table 1</span></div>
+    </header>
+    <p class="panel-lede">An omnidirectional fingertip. LEDs embedded in a resin shell light the gel from inside. Choose the colours of the four LED arms, then reshape the whole tip and the inner resin with cages.</p>
+    <div class="steps" id="g360Steps"><button class="on" data-step="light">① Light colours</button><button data-step="set1">② Sensor shape</button><button data-step="set2">③ Resin shell</button></div>
+    <div class="lab">
+      <div class="stage">
+        <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame xfade" id="g360Img" style="aspect-ratio:324/243"></div>
+        <div class="stage-bar">
+          <label class="switch"><input type="checkbox" id="g360Sat" checked><span></span>Camera saturation model</label>
+          <span class="fine" id="g360Caption"></span>
+        </div>
+      </div>
+      <aside class="controls">
+        <div data-step-show="light">
+          <div class="group"><h5>Light groups</h5>
+            <div class="light-designer">
+              <svg id="g360Wheel" viewBox="-110 -110 220 220" aria-label="LED arm colour selector"></svg>
+              <div>
+                <p class="fine">Each arm of the X holds two LED colours. The third colour fills the lower lights. Click an arm to cycle its pair.</p>
+                <p class="code" id="g360Code">RGBRGBRG</p>
+                <div class="chips" id="g360Presets"></div>
+                <button class="btn ghost small" id="g360Random">Shuffle ⟳</button>
+                <div class="row-label">base (lower) LEDs, all arms</div>
+                <div class="seg wide" id="g360Base"><button data-b="" class="on">auto<small>3rd colour</small></button><button data-b="R"><i class="dot R"></i>red</button><button data-b="G"><i class="dot G"></i>green</button><button data-b="B"><i class="dot B"></i>blue</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="group scores" id="g360Scores"></div>
+        </div>
+        <div data-step-show="set1" hidden>
+          <div class="group"><h5>Tip shape A <span class="hint">flat → conical</span></h5>
+            <label class="ctl"><input type="range" id="g360A1" min="0" max="1" step="0.01" value="0.6"><output id="g360A1Out">Design 6</output></label>
+          </div>
+          <div class="charts" id="g360Chart1"></div>
+        </div>
+        <div data-step-show="set2" hidden>
+          <div class="group"><h5>Resin shell A <span class="hint">uniform → filled</span></h5>
+            <label class="ctl"><input type="range" id="g360A2" min="0" max="1" step="0.01" value="0.4"><output id="g360A2Out">Design 4</output></label>
+          </div>
+          <div class="charts" id="g360Chart2"></div>
+        </div>
+        <div class="viewer small" id="g360Viewer" data-step-hide="light" hidden><span class="viewer-hint">cage morph · drag</span>
+          <label class="switch mini-switch"><input type="checkbox" id="g360Cut" checked><span></span>cut view</label></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- SVELTE -->
+  <div class="panel" data-panel="svelte" hidden>
+    <header class="panel-head">
+      <h3>Case IV · GelSight Svelte: mirror shape optimization</h3>
+      <div class="metric-chips"><span data-metric="aoap">AOAP</span><span class="ref">Fig. 13–14</span></div>
+    </header>
+    <p class="panel-lede">A human-finger-shaped sensor. One camera sees the whole finger through two mirrors. The large back mirror (M1) smears objects that touch near the base. CMA-ES reshapes M1's 81 cage parameters to maximize AOAP. The left side of the image always shows the original mirror; drag the divider to compare.</p>
+    <div class="lab">
+      <div class="stage">
+        <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame wipe" id="svelteWipe" style="aspect-ratio:4/3">
+          <img id="svelteA" alt="Original mirror design">
+          <div class="wipe-top"><img id="svelteB" alt="Selected mirror design"></div>
+          <div class="wipe-handle" id="svelteHandle"><span></span></div>
+          <span class="corner l">Original M1</span><span class="corner r" id="svelteRight">Optimized M1</span>
+          <div class="loupe" id="svelteLoupe"></div>
+        </div>
+        <div class="stage-bar">
+          <label class="switch"><input type="checkbox" id="svelteSat" checked><span></span>Camera saturation model</label>
+          <span class="fine">Hover the image for a magnifier</span>
+        </div>
+      </div>
+      <aside class="controls">
+        <div class="group"><h5>Mirror M1 shape</h5>
+          <label class="ctl"><span>original</span><input type="range" id="svelteT" min="0" max="4" step="1" value="4"><span>optimized</span></label>
+          <p class="fine">In-between shapes blend the two end meshes: each optimized vertex moves from its closest point on the original mirror. They are not CMA-ES iterates, so they have no AOAP score.</p>
+        </div>
+        <div class="group"><h5>Indenter</h5>
+          <div class="seg wide" id="svelteObj"><button data-o="lego" class="on">LEGO brick</button><button data-o="screw">Set screw</button><button data-o="sphere">Sphere</button></div>
+          <label class="ctl" id="sveltePosWrap" hidden><span>tip</span><input type="range" id="sveltePos" min="1" max="6" step="1" value="5"><span>base</span></label>
+        </div>
+        <div class="group aoap">
+          <h5><span data-metric="aoap">AOAP score</span> <span class="hint">higher = less distortion</span></h5>
+          <div class="aoap-row"><div><b class="count" data-to="0.236">0.000</b><small>original</small></div><span class="arrow">→</span><div><b class="count good" data-to="0.635">0.000</b><small>optimized</small></div></div>
+          <p class="fine">CMA-ES, ~320 iterations. Search space reduced from 22,680 mesh coordinates to 81 cage parameters.</p>
+        </div>
+        <div class="viewer small" id="svelteViewer"><span class="viewer-hint">M1 morph (green) · original (red wire) · drag</span></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- CUSTOM -->
+  <div class="panel" data-panel="custom" hidden>
+    <header class="panel-head">
+      <h3>Build your own sensor</h3>
+
+    </header>
+    <p class="panel-lede">A GelSight-style stack built from OptiSense modules: camera, acrylic support, silicone elastomer and a coated sensing surface, lit by three LED bars. Pick a stop for every parameter to see the tactile image of that design.</p>
+    <div class="custom-layout">
+      <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+      <div class="custom-left">
+        <figure><div class="frame xfade" id="customImg" style="aspect-ratio:4/3"></div></figure>
+        <figure><div class="viewer" id="customViewer"><span class="viewer-hint">drag to orbit</span></div><figcaption>The same stack in 3D: LED bars with their light direction, camera and field of view</figcaption></figure>
+      </div>
+      <div class="custom-params" id="customControls"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── BEYOND ───────────── -->
+<section id="beyond" class="section">
+  <div class="section-head reveal">
+    <p class="eyebrow">Why these objectives?</p>
+    <h2>Good objective scores carry over to downstream tasks</h2>
+    <p>The paper trains small random-forest models directly on simulated images: one estimates how far a plane is tilted against the gel, the other estimates a cylinder's radius.
+      Both get worse as the coating gets more specular, the same trend RGB2Norm and NormDiff predict. The images below are part of the datasets those models were trained on. <span class="ref">Fig. 15–16</span></p>
+  </div>
+  <div class="beyond-grid">
+    <div class="card reveal">
+      <h3>Tilt a plane against the gel</h3>
+      <div class="tilt">
+        <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame xfade" id="tiltImg" style="aspect-ratio:4/3"></div>
+        <div class="tilt-ctl">
+          <div class="pad" id="tiltPad"><span class="knob"></span><i class="ax x">θx</i><i class="ax y">θy</i></div>
+          <div class="tilt-readout">
+          <p class="code" id="tiltOut">θx 0°<br>θy 0°</p>
+            <div class="seg" id="tiltSpec"><span class="seg-label">spec.</span><button data-s="0">0</button><button data-s="1" class="on">0.1</button><button data-s="5">0.5</button><button data-s="8">0.8</button></div>
+          </div>
+        </div>
+      </div>
+      <p class="fine">Cylindrical GelSight Mini pressed against a plane tilted up to ±10° about both axes. With low-specularity coatings the estimated angle reaches 0.5° mean absolute error.</p>
+    </div>
+    <div class="card reveal">
+      <h3>Press cylinders of growing radius</h3>
+      <div class="img-tools"><label class="switch bgsub-toggle"><input type="checkbox"><span></span>Background subtracted</label><div class="seg bgsub-scale off" title="how image − background is mapped to 0…1"><button data-m="sym" class="on">±range · 0.5 = no change</button><button data-m="minmax">min–max</button></div></div>
+        <div class="frame xfade" id="radImg" style="aspect-ratio:4/3"></div>
+      <label class="ctl"><span>radius ×</span><input type="range" id="radS" min="2" max="50" value="12"><output id="radOut">12</output></label>
+      <div class="row-ctl">
+        <div class="seg" id="radShape"><button data-s="cyl" class="on">cyl. pad</button><button data-s="sph">sph. pad</button></div>
+        <div class="seg" id="radSpec"><span class="seg-label">spec.</span><button data-s="1" class="on">0.1</button><button data-s="5">0.5</button><button data-s="8">0.8</button></div>
+      </div>
+      <p class="fine">The cylinder's x/y scale goes from 2 to 50. The model regresses the radius from the per-channel standard deviation inside the contact.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cite" class="section">
+  <div class="cite reveal">
+    <div class="cite-head"><h3>Cite</h3><button class="btn ghost small" id="copyBib">Copy BibTeX</button></div>
+<pre id="bib">@article{agarwal2025modularized,
+  title={A modularized design approach for GelSight family of vision-based tactile sensors},
+  author={Agarwal, Arpit and Mirzaee, Mohammad Amin and Sun, Xiping and Yuan, Wenzhen},
+  journal={The International Journal of Robotics Research},
+  volume={44},
+  number={13},
+  pages={2195--2214},
+  year={2025},
+  publisher={SAGE Publications, Sage UK: London, England}
+}</pre>
+  </div>
+</section>
+
+</main>
+<footer>OptiSense Studio · Agarwal, Mirzaee, Sun, Yuan · The International Journal of Robotics Research 44(13), 2025</footer>
+
+<script type="module" src="assets/js/main.js?v=20261020j"></script>
+</body>
+</html>
