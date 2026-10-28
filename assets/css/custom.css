@@ -12,3 +12,14 @@
 :root {
   zoom: 0.9;
 }
+
+/* Award badge on publication entries */
+.publication-award {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 7px;
+  background-color: #fbeeed;
+  color: #c74636;
+  font-size: var(--wp--preset--font-size--x-small);
+}
